@@ -22,8 +22,8 @@ it does not load `.env` automatically. Never commit your key.
 
 ## Flutter interface
 
-See [Running BonaManĝo](docs/RUNNING_THE_APP.md) for Chrome and macOS launch commands,
-iOS preparation, the two-terminal workflow and troubleshooting.
+See [Running BonaManĝo](docs/RUNNING_THE_APP.md) for macOS, iOS, Chrome and Windows setup, launch commands, testing,
+offline pairing and troubleshooting.
 
 The Dart/Flutter application in `flutter_app` lists restaurant name, city, country,
 and cuisine. Phone and website icons beneath each restaurant name show

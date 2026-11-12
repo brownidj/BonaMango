@@ -34,12 +34,30 @@ placeholder test fonts and undecoded images must not become reference images.
 Run from the project root:
 
 ```zsh
-./scripts/run_tests.zsh
+./scripts/run_tests.zsh --all
 ```
 
-This runs Python tests, Flutter analysis and Flutter tests with line coverage.
+This runs all Python tests (including HTTP integration), dependency resolution,
+Dart analysis, all Flutter unit/widget/golden tests with line coverage, and all
+native tests under `integration_test/`. It automatically selects a booted iOS
+simulator; if none is running, it stops with an error instead of skipping native
+tests. You can supply `--device <id>` to choose a target explicitly.
 Logs go into a timestamped directory under `data/logs/`. The script stops on a
 failure and preserves the failing command's status.
+
+Run the macOS app only if all tests pass:
+
+```zsh
+cd '/Users/david/PycharmProjects/bona_manĝo'
+./scripts/run_tests.zsh --all &&
+  (cd flutter_app && flutter run -d macos)
+```
+
+The Python catalogue service must also be running when using the app. Cleaning
+is optional; the correct command is `flutter clean`. If needed, run it before
+the test script using `&&`, never background it with `&`. The runner uses direct
+`dart analyze` to avoid the installed Flutter wrapper's Unicode-path issue.
+Without `--all` or `--device`, the runner executes only the host layers.
 
 Include native integration using an already available simulator/device:
 
@@ -58,7 +76,7 @@ Include release builds and package checks:
 
 ```zsh
 ./scripts/run_tests.zsh --builds
-./scripts/run_tests.zsh --device 0964BE76-B88B-4875-8682-8C7C17609DBA --builds
+./scripts/run_tests.zsh --all --builds
 ```
 
 `--builds-only` repeats packaging checks after an asset-only change without

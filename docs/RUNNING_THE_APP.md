@@ -1,328 +1,311 @@
-# Running BonaManĝo in Chrome, macOS and iOS
+# Running BonaManĝo: macOS, iOS, Chrome and Windows
 
-Updated: 11 November 2026.
+Updated: 12 November 2026.
 
-BonaManĝo has two parts: a Python service that reads the restaurant database, and
-a Flutter interface that displays it. Start the service first and keep it running
-while you use the interface. Browsing does not require an OpenAI API key.
+The project is `/Users/david/PycharmProjects/bona_manĝo`. Open that folder alone
+in PyCharm. The visible app name is **BonaManĝo**; ASCII package/executable names
+are `bona_mangxo`, `bona_mangxo_app` and, on macOS, `BonaMangxo.app`.
+The native app ID is `org.topository.bonamangxo`.
 
-## Current platform support
+All shell examples below use **zsh on the Mac**. The Windows section describes
+native Windows tools and executable arguments without requiring a PowerShell
+script. Run commands sequentially with `&&`; `&` starts concurrent work.
 
-| Platform | Status in this checkout |
-| --- | --- |
-| Chrome on this Mac | Web target exists; use the launch commands below. |
-| Native macOS | macOS target exists; use the launch commands below. |
-| iOS simulator | iOS target now exists. Use the simulator commands; no target generation needed. |
-| Physical iPhone or iPad | App launch confirmed by the user. Use the paired Mac service/mobile launcher below for catalogue access. |
+## What each platform needs
 
-These instructions were checked against the current source and command-line
-help. No platform builds or app launches were performed when writing this guide.
-The iOS target has since been generated. The paired mobile connection workflow below supersedes the earlier localhost-only device limitation.
+| Platform | Catalogue connection | Current verification |
+|---|---|---|
+| macOS app | Python service on the same Mac, port 8776 | Debug build and code signature verified |
+| Chrome on a computer | Python service on that computer, port 8776 | Web release compilation and assets verified; browser interaction remains a manual check |
+| iOS app | Packaged starting data plus local SQLite; optional sync to the paired Mac | Two native iOS simulator integration tests passed; this app identity still needs physical-device QA |
+| Windows app | Python service on the Windows computer, port 8776 | Windows runner/icon/configuration included; Windows compilation and device behaviour are unverified |
 
-## 1. Open the project and check your tools
+Desktop and Chrome do not currently have the mobile offline database. Keep their
+Python service running. Mobile supports offline browsing, adding, editing and
+reviewing; enhanced OpenAI details discovery is unavailable on mobile.
+Maps, websites and telephone actions use the operating system's available apps.
 
-The project is currently located here:
+## Setup and data
+
+The existing local checkout has its own Python environment and restaurant database.
+From the project root, check your development tools:
 
 ```zsh
 cd '/Users/david/PycharmProjects/bona_manĝo'
-```
-
-All commands labelled **project root** below run from this directory, not from
-`flutter_app`. If you move the project, substitute its new location.
-
-In PyCharm, open **Terminal**. You will need two terminal tabs: one for the data
-service and one for Flutter. The commands also work in macOS Terminal.
-
-Check Flutter and available targets:
-
-```zsh
-flutter --version
 flutter doctor -v
 flutter devices
 ```
 
-This Mac currently has Flutter 3.47.1, Dart 3.13.1 and Xcode 27.2. The project
-requires Python 3.11 or later and Dart compatible with `^3.13.1`.
-
-If `flutter` is not found, add the installed SDK to the current terminal's path:
+If Flutter is not on PATH, this Mac's SDK can be added for the terminal session:
 
 ```zsh
 export PATH="/Users/david/development/flutter/bin:$PATH"
 ```
 
-Chrome requires Google Chrome to be installed and detected by `flutter devices`.
-Native Apple targets require a working Xcode toolchain; resolve relevant
-`flutter doctor -v` issues before building. See the official
-[web setup](https://docs.flutter.dev/platform-integration/web/setup) and
-[macOS setup](https://docs.flutter.dev/platform-integration/macos/setup) guides.
-
-## 2. Start the data service — terminal 1
-
-From the **project root**:
-
-```zsh
-.venv/bin/python restaurant_server.py
-```
-
-The terminal should print:
-
-```text
-BonaManĝo data service: http://127.0.0.1:8776/api/restaurants
-```
-
-Leave this terminal running. The service reads `../data/restaurants.sqlite3` without
-modifying it. It does not run restaurant research or incur OpenAI usage charges.
-
-To check it, open
-[the restaurant data endpoint](http://127.0.0.1:8776/api/restaurants) in a browser.
-You should see JSON containing `restaurants` and `total`. This is the data feed;
-the Flutter commands below launch the actual interface.
-
-### If the environment or database is missing
-
-The existing project already has both. Only use these setup steps if needed.
-From the **project root**, create a missing environment and install dependencies:
+A fresh Git checkout does **not** include the virtual environment, researched
+SQLite databases, pairing key, generated starting catalogue or build products.
+Only for a fresh checkout or missing environment:
 
 ```zsh
 python3 -m venv .venv
 .venv/bin/python -m pip install -e .
 ```
 
-To create a missing database from the original note without API calls:
+If the database is missing, either restore your own backed-up
+`data/restaurants.sqlite3`, or create provisional records from the included source:
 
 ```zsh
 .venv/bin/python main.py import-local
 ```
 
-This produces provisional records; it does not research or verify them. Keep
-`../data/restaurants.txt` as the original source. Do not replace an existing researched
-database just to launch the interface.
+The latter is an offline import, not the full researched catalogue. Do not use it
+to replace an existing database. City completion can fall back to manual entry
+without the optional local `data/cities.sqlite3` index. Browsing, manual editing
+and these tests do not require an OpenAI API key.
 
-## 3. Run in Chrome — terminal 2
+## Run all automated tests on the Mac
 
-In a **new terminal**, run:
+Start an iOS simulator using Xcode's device interface first. Then:
+
+```zsh
+cd '/Users/david/PycharmProjects/bona_manĝo'
+./scripts/run_tests.zsh --all
+```
+
+This runs all Python tests (including real HTTP/SQLite integration), dependency
+resolution, direct Dart analysis, all Flutter unit/widget/golden tests with
+coverage, and all native tests in `flutter_app/integration_test/`. It selects a
+booted iOS simulator; if none is booted, it fails rather than skipping tests.
+Choose a specific target with `--all --device DEVICE_ID`.
+
+The latest complete run passed **101 Python, 71 Flutter and 2 native iOS tests**,
+with no analysis issues. The native tests use isolated data and fake transport;
+they are not a physical Wi-Fi, Maps or browser test. Logs are in `data/logs/`.
+
+The runner uses `dart analyze` because this installed Flutter version's
+`flutter analyze` wrapper fails with the Unicode project path. A normal clean
+is unnecessary. If needed, run `flutter clean` from `flutter_app` before testing;
+`flutter clear` is not a valid command. Do not update golden references merely
+to silence an unexpected failure.
+
+`--all --builds` additionally compiles web/macOS/iOS release packages and checks
+assets. Signed iOS builds require the appropriate Apple signing setup. Manual
+checks and Windows-native builds remain separate; see [Testing](TESTING.md).
+
+## macOS
+
+Start the catalogue service in terminal 1, from the project root:
+
+```zsh
+cd '/Users/david/PycharmProjects/bona_manĝo'
+.venv/bin/python restaurant_server.py
+```
+
+It serves `http://127.0.0.1:8776/api/restaurants` and reads
+`data/restaurants.sqlite3` relative to the project root. Keep the terminal running.
+A compatible paired LAN service already running on port 8776 can also serve the
+local desktop app; avoid unnecessarily switching that service out of LAN mode.
+
+In terminal 2, test and then launch:
+
+```zsh
+cd '/Users/david/PycharmProjects/bona_manĝo'
+./scripts/run_tests.zsh --all &&
+  (cd flutter_app && flutter run -d macos)
+```
+
+For a launch without repeating the completed test run:
 
 ```zsh
 cd '/Users/david/PycharmProjects/bona_manĝo/flutter_app'
-flutter pub get
-flutter run -d chrome
+flutter pub get && flutter run -d macos
 ```
 
-Flutter opens Chrome at the interface's development address. Keep the Python
-service running in terminal 1. Search or filter the restaurant list, and use
-**Refresh** to load changes made to the database by a separate research run.
-
-For a predictable browser address, use this launch command instead:
+Build a standalone release application from `flutter_app`:
 
 ```zsh
-flutter run -d chrome --web-port=8080
+flutter build macos --release &&
+  open 'build/macos/Build/Products/Release/BonaMangxo.app'
 ```
 
-The interface is then at [localhost:8080](http://localhost:8080); the data service
-still uses port **8776**. These are separate services and need separate ports.
-This configuration is for Chrome on this Mac, not a browser on your phone.
+The app's visible name remains BonaManĝo. The ASCII bundle/executable filename
+avoids the Unicode codesigning problem encountered during setup. A desktop
+build still needs Python running; it does not bundle the backend or database.
+The current brighter mango source assets require rebuilding an older installed
+app before its Dock/app-switcher icon changes.
 
-## 4. Run as a native macOS app — terminal 2
+## Chrome
 
-Keep terminal 1 running. In a **new terminal**:
+Install Chrome and keep terminal 1's local Python service running as above.
+In terminal 2:
 
 ```zsh
 cd '/Users/david/PycharmProjects/bona_manĝo/flutter_app'
-flutter pub get
-flutter run -d macos
+flutter pub get && flutter run -d chrome --web-port=8080
 ```
 
-A native **BonaManĝo** window should open. Its data comes from the same Python
-service as the Chrome version. The project already includes the macOS network
-client entitlement and local-network transport configuration.
+Flutter opens the interface at `http://localhost:8080`. Port 8080 is the UI;
+port 8776 is its catalogue API. A browser on another computer cannot use your
+Mac's `127.0.0.1`; this recipe runs both services on the same computer.
+Flutter documents [Chrome/Edge development setup](https://docs.flutter.dev/platform-integration/web/setup).
 
-### Optional: build a macOS application
-
-From `flutter_app`:
+For a compiled web preview, build from `flutter_app`:
 
 ```zsh
-flutter build macos --release
-open 'build/macos/Build/Products/Release/BonaManĝo.app'
+flutter build web --release
 ```
 
-The built application still needs the Python service running on this Mac. The
-database and Python service are not bundled inside the application.
-
-## 5. Prepare and run in the iOS simulator
-
-**One-time project work is required:** there is currently no iOS runner. The
-following steps add one; they are not an already-tested iOS launch procedure.
-
-### Generate the iOS target
-
-Save your current work before generating files. From `flutter_app`:
+Then serve it in another terminal from the project root, while keeping the API
+service running:
 
 ```zsh
-flutter create --platforms=ios --project-name=bona_mangxo_app --org=au.com.bona_mangxo --no-pub .
-flutter pub get
+.venv/bin/python -m http.server 8080 --bind 127.0.0.1 --directory flutter_app/build/web
 ```
 
-Review the generated changes with Git. Keep the existing `lib/` implementation
-and dependencies. Set the iOS display name to **BonaManĝo** in the generated
-`ios/Runner/Info.plist`.
+Open `http://localhost:8080`. Do not open `index.html` directly from Finder.
 
-The interface uses a local HTTP endpoint. Add this entry **inside the existing
-top-level `<dict>`** in `ios/Runner/Info.plist`, merging it with any existing
-`NSAppTransportSecurity` dictionary rather than creating duplicate keys:
+## iOS: simulator and development phone
 
-```xml
-<key>NSAppTransportSecurity</key>
-<dict>
-    <key>NSAllowsLocalNetworking</key>
-    <true/>
-</dict>
-```
+The iOS runner already exists. **Do not run `flutter create` to generate it.**
+Use a Mac with Xcode, an installed simulator runtime, and the Flutter SDK.
+For a physical development phone, configure signing for
+`org.topository.bonamangxo`, trust the Mac, unlock the phone and enable Developer
+Mode as required by [Flutter's iOS setup](https://docs.flutter.dev/platform-integration/ios/setup).
 
-Use a local networking exception for development; keep a deployed service on
-HTTPS. See Apple's
-[NSAllowsLocalNetworking reference](https://developer.apple.com/documentation/bundleresources/information-property-list/nsapptransportsecurity/nsallowslocalnetworking).
-
-### Start a simulator and launch
-
-Use Xcode to install an iOS simulator runtime if none is installed. On this
-Mac's Xcode 27, open **Device Hub**, choose an iPhone simulator and start it:
+List targets from `flutter_app` using `flutter devices`. From the project root,
+replace `SIMULATOR_ID` with an actual simulator ID:
 
 ```zsh
-open -a DeviceHub
+./scripts/run_mobile.zsh -d SIMULATOR_ID --debug
 ```
 
-On Xcode 26 or earlier, the application is called **Simulator** instead.
-See Flutter's [iOS setup guide](https://docs.flutter.dev/platform-integration/ios/setup).
-
-Start the Python service in terminal 1 as described earlier. In terminal 2,
-from `flutter_app`, list devices:
+The explicit debug mode is needed for the simulator. For a connected physical
+phone, replace `PHONE_ID` with its actual ID:
 
 ```zsh
-flutter devices
+./scripts/run_mobile.zsh -d PHONE_ID
 ```
 
-Copy the simulator's device ID. Replace `SIMULATOR_ID` below with that actual ID:
+The phone launcher defaults to release so the installed app can reopen without
+Flutter's debugger. It prepares the packaged catalogue, starts the Mac service
+in paired LAN mode, and supplies the private local owner configuration to this
+personal development build. Allow Local Network access when prompted.
+
+No source change or extra Maps/Safari/telephone entitlement is needed merely to
+launch those OS handlers; verify the actions on a physical device. A debugger's
+VM-service timeout and catalogue synchronization are different connections.
+
+## iOS: private TestFlight distribution and sync
+
+Before first distribution of this app identity, register
+`org.topository.bonamangxo` and create its matching App Store Connect record.
+The renamed local project does not reuse another app's store record or pairing.
+
+Build a TestFlight IPA after tests pass, choosing a build number greater than
+any already uploaded for this app/version:
 
 ```zsh
-flutter run -d SIMULATOR_ID --dart-define=RESTAURANT_API_URL=http://127.0.0.1:8776
+./scripts/run_tests.zsh --all &&
+  ./scripts/build_testflight.zsh --build-name 0.1.0 --build-number 1
 ```
 
-The simulator uses the Mac-hosted service at the loopback address. Verify that
-the restaurant list loads; native iOS behavior has not yet been checked here.
+Here `1` is only a first-upload example. The resulting stable path is
+`build/ios/ipa/bona_mangxo_app.ipa` **under the project root**; a successful new
+export overwrites the previous IPA there. Upload manually with Transporter.
+See [TestFlight and Transporter](TESTFLIGHT_AND_TRANSPORTER.md) for the workflow;
+historical build numbers in that document are not this app's upload history.
 
-## 6. Running on a real iPhone or iPad
-
-A physical phone cannot use the Mac's localhost: 127.0.0.1 on the phone means
-that phone. The paired launcher configures the Mac's .local hostname instead.
-From the project root (one directory above flutter_app):
+The shared build includes an initial catalogue and a public Mac server address,
+**not** the private pairing key. A new installation can work immediately offline.
+On the Mac's network, pair an invited phone once. On the Mac:
 
 ```zsh
-./scripts/run_mobile.zsh
+.venv/bin/python scripts/prepare_mobile.py
+./scripts/copy_pairing_key.zsh
 ```
 
-Choose the iPhone if Flutter offers multiple devices. You may pass -d DEVICE_ID
-to the launcher. It defaults to a release installation, which can reopen from
-the iPhone home screen without Flutter's debugger. Pass --profile or --debug
-explicitly for development when needed. Keep the Mac awake and both devices on the same private Wi-Fi.
-Allow Local Network for BonaManĝo (currently displayed as BonaManĝo App on iOS) when
-asked. If already denied, enable it in Settings → Privacy & Security → Local
-Network. Allow the Mac's local-network/incoming-connection prompt if shown.
+On the phone, tap the sync status below the sort controls, choose **Pair with
+Mac**, and paste the complete key. Use **Paste key** and **Show key** if needed;
+the server URL is not the key. Keep the key private. Press **Sync now** to verify.
+The key is stored in the phone's Keychain for future connections.
 
-The launcher prepares a persistent random pairing token in ignored,
-owner-readable data/mobile_connection.json, starts the catalogue service on
-port 8776 using --lan, waits for its local health/pairing fingerprint, prepares
-iOS build output, and runs Flutter with --dart-define-from-file pointing at that
-private configuration. It does not print the token. It uses the Mac's local
-hostname, so ordinary DHCP address changes do not require updating an IP address.
-Changing the host/token requires another launch/build with that configuration.
+Keep the Mac awake, the service running and both devices on the same private
+network. Idle checks run every 15 seconds after at least 5 seconds without
+interaction, so a pending edit normally starts syncing after 5–20 seconds while
+the app is in the foreground. Returning to the Mac network triggers a separate
+2-second debounce. Clean clients do not continuously poll.
 
-The service stays running after Flutter exits; its log is
-data/logs/mobile_service.log. The existing localhost desktop service on 8776 can
-continue using the same catalogue. LAN requests require the pairing token and a
-private source address; loopback desktop use remains available. Do not publish
-this development LAN service on the internet. Pairing is shared access to this
-one catalogue, not separate user accounts or a public deployment.
+Sync and list refresh are deferred while an edit/review flow is open, including
+nested Edit details. Saved changes become eligible when the flow closes; Cancel
+does not save or initiate sync. The sync modal closes after a successful sync
+with no pending changes/conflicts, and stays open on an error or conflict.
+See [Offline packaging and synchronization](PACKAGED_CATALOGUE_AND_SYNC.md).
 
-Manual add/edit/review/archive/restore, city completion and website availability
-checks use the paired endpoint. Remote AI research requests are rejected even
-when a server API key is configured. API credentials are never included in the
-phone app; the pairing token is a separate catalogue-access secret.
+## Windows
 
-NSLocalNetworkUsageDescription and NSAllowsLocalNetworking are present in the iOS
-source plist for the .local HTTP service. Flutter supplies the debug-only VM
-Bonjour entry automatically; the built debug plist was inspected and already
-contained it. The debugger timeout and catalogue connectivity are different
-connections. See [Flutter iOS debugging](https://docs.flutter.dev/platform-integration/ios/ios-debugging).
+Use a native Windows development machine. Install Python 3.11+, Git, the Flutter
+SDK, and **Visual Studio with Desktop development with C++**. Visual Studio Code
+alone does not provide that native compiler workload. Resolve Windows/Visual
+Studio errors from `flutter doctor -v`; `flutter devices` must list Windows.
+See [Flutter's Windows setup](https://docs.flutter.dev/platform-integration/windows/setup).
+A Windows desktop build must be produced using its Windows toolchain, not this
+Mac's build commands.
 
-To restart only the paired service manually:
+Copy or clone the source project into a local Windows folder and open that
+folder alone in PyCharm. Do not copy the Mac `.venv`, build-cache symlink or
+compiled Mac app. Use PyCharm's interpreter setup to create a local `.venv`
+with the Windows Python executable. Its interpreter is
+`.venv\Scripts\python.exe`, rather than the Mac's `.venv/bin/python`.
 
-```zsh
-.venv/bin/python restaurant_server.py --lan
-```
+The following are native executable/argument pairs, usable through IDE run
+configurations or your Windows terminal; they are not zsh scripts:
 
-A plain flutter run without the private defines defaults to localhost and is
-therefore unsuitable for a physical phone's catalogue connection. Use the paired
-launcher when rebuilding/reinstalling the mobile app. The desktop workflow is
-unchanged. First physical-device deployment still requires Xcode signing,
-trusting/unlocking the phone and Developer Mode as described by
-[Flutter's device setup guide](https://docs.flutter.dev/platform-integration/ios/setup).
+| Working directory | Executable | Arguments | Purpose |
+|---|---|---|---|
+| Project root | `.venv\Scripts\python.exe` | `-m pip install -e .` | Install backend dependencies |
+| Project root | `.venv\Scripts\python.exe` | `main.py import-local` | Create provisional data only if a database is missing |
+| Project root | `.venv\Scripts\python.exe` | `restaurant_server.py` | Start the local API on port 8776 |
+| `flutter_app` | Flutter SDK's `flutter.bat` | `pub get` | Resolve Flutter packages |
+| `flutter_app` | Flutter SDK's `dart.bat` | `analyze` | Static analysis |
+| Project root | `.venv\Scripts\python.exe` | `-m unittest discover -s tests -v` | All Python/HTTP tests |
+| `flutter_app` | Flutter SDK's `flutter.bat` | `test --coverage` | All Flutter unit/widget/golden tests |
+| `flutter_app` | Flutter SDK's `flutter.bat` | `run -d windows` | Launch the Windows desktop app |
+| `flutter_app` | Flutter SDK's `flutter.bat` | `run -d chrome --web-port=8080` | Launch Chrome on Windows |
+| `flutter_app` | Flutter SDK's `flutter.bat` | `build windows --release` | Build the Windows release |
 
-## Stop, restart and troubleshoot
+Keep the backend running in a separate configuration/terminal. Restore a trusted
+copy of `data/restaurants.sqlite3` for the full researched catalogue; Git does
+not include it. Desktop requests use `http://127.0.0.1:8776`. The Windows app does
+not currently provide mobile-style offline storage or pairing.
 
-- **Stop the interface:** press `q` in its `flutter run` terminal, or Ctrl+C.
-- **Stop the data service:** press Ctrl+C in terminal 1.
-- **Restart:** start the service, then repeat your platform's `flutter run` command.
-- **Refresh data:** use the interface's Refresh button. Hot reload reloads code;
-  it is not a substitute for reloading restaurant data.
+The typical x64 release is under
+`flutter_app\build\windows\x64\runner\Release\bona_mangxo_app.exe`; keep the
+whole release directory with its DLLs and `data` folder, not just the executable.
+The Python backend and database still need separate setup on the recipient's PC.
+See [Flutter's Windows build guidance](https://docs.flutter.dev/platform-integration/windows/building).
 
-| Problem | What to check |
-| --- | --- |
-| `flutter: command not found` | Add the installed Flutter SDK to `PATH` in that terminal. |
-| Chrome/macOS/simulator missing from `flutter devices` | Check `flutter doctor -v`; install the relevant browser/toolchain/runtime and start the simulator. |
-| Interface opens but restaurant data fails to load | Keep the Python terminal running and check the JSON endpoint on the Mac. |
-| “Database does not exist” | Start from the project root; confirm `../data/restaurants.sqlite3` exists, or use the missing-database steps above. |
-| Port occupied | Startup replaces a verified older BonaManĝo service for this project/database. An unrelated or unverifiable listener is left running; close it yourself or choose another matching service/Flutter port below. |
-| iOS target missing | Generate the iOS target first; there is no iOS runner in this checkout yet. |
-| iPhone connects to itself or times out | Use a reachable service URL and complete the physical-device networking work above. |
-| Native build fails | Read the first substantive build error and check Xcode/toolchain setup. Avoid replacing the database or deleting project files as a troubleshooting step. |
+The zsh runner's `--all` auto-selection and Apple build helpers are Mac-specific.
+Run the Windows host checks above sequentially, and run native iOS integration on
+the Mac. Cross-platform golden captures may differ on Windows; investigate a
+failure rather than blindly replacing the reviewed references. Windows builds,
+phone/browser handlers and packaged installation have not been verified here.
 
-To use another service port, start this in terminal 1 from the **project root**:
+## Stop and troubleshoot
 
-```zsh
-.venv/bin/python restaurant_server.py --port 8776
-```
+Press `q` or Ctrl+C in the Flutter launch terminal to stop the UI. Stop a manually
+started backend with Ctrl+C. The background paired service started by the mobile
+helper remains running; its log is `data/logs/mobile_service.log`.
 
-Then launch from `flutter_app`, matching the port:
+| Problem | Action |
+|---|---|
+| Missing desktop/Chrome catalogue | Start Python; check `http://127.0.0.1:8776/api/restaurants` on that computer |
+| Missing database after cloning | Restore your private backup, or use the provisional offline import only for a new database |
+| Pairing mismatch | Paste the actual key, not the URL; ensure the updated paired service is running |
+| Phone cannot reach Mac | Check Local Network permission, same network, Mac awake, firewall and guest-network isolation |
+| Address starts with HTTPS | The local service uses `http://`; it is not configured for TLS |
+| Wrong port occupied | Only a verified older service for this project/database is replaced; unrelated listeners are left alone |
+| Analyzer crashes on the Unicode path | Use the test runner/direct `dart analyze` |
+| Old installed icon | Rebuild/reinstall; editing source assets does not modify installed binaries |
+| Missing Windows compiler | Install/repair Visual Studio's Desktop development with C++ workload |
 
-```zsh
-flutter run -d chrome --dart-define=RESTAURANT_API_URL=http://127.0.0.1:8776
-```
-
-Replace `chrome` with `macos` or the prepared simulator ID for those platforms.
-For another database, add `--db '/absolute/path/restaurants.sqlite3'` to the
-Python service command. Browsing and website checks are read-only; explicit saves from the edit modal update the database and retain edit history.
-
-### Automatic port recovery
-
-Run `.venv/bin/python restaurant_server.py` as usual. Startup attempts the actual
-socket bind first and allows immediate address reuse after shutdown. If the port
-is busy, it uses psutil to identify a listener owned by the same user, executing
-this exact Python script for the same database and port. Only that matching
-service receives an interrupt; startup waits up to five seconds, then binds again.
-A different program, another project's service or a service using another
-database is left alone. There is no forced kill or silent switch to another port.
-The error reports a next step if ownership cannot be verified or shutdown fails.
-
-`psutil` is included in the project's Python dependencies. The current virtual
-environment has been updated. Changed server startup, package metadata and this
-guide; created `tests/test_restaurant_server_startup.py`. Python syntax and diff
-whitespace checks passed. Tests were added but not run, and no application was
-launched for verification, following the manual verification policy.
-
-Manual verification: from the project root run
-`.venv/bin/python -m unittest discover -s tests -p test_restaurant_server_startup.py -v`.
-Start the service in one terminal and run the same command in a second terminal;
-the previous service should stop and the new one should serve port 8776. Also
-check that a non-BonaManĝo listener on a spare port is left untouched. Record date,
-tester, environment and results. No commit was made; phase not applicable.
-Suggested commit: `Recover occupied port from a verified previous restaurant service`.
+No internet exposure or public hosting is configured by these instructions.

@@ -1,6 +1,6 @@
 # BonaManĝo restaurant browser
 
-For the full launch guide, including iOS preparation, see
+For the current macOS, iOS, Chrome and Windows launch guide, see
 [Running BonaManĝo](../docs/RUNNING_THE_APP.md).
 
 Flutter interface for `../data/restaurants.sqlite3`, targeting web and native
