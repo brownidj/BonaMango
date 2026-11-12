@@ -1,0 +1,54 @@
+name: bona_mangxo_app
+description: "BonaManĝo: a searchable collection of restaurant discoveries."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.1
+
+dependencies:
+  crypto: ^3.0.8
+  connectivity_plus: ^7.3.2
+  cupertino_icons: ^2.0.0
+  flutter:
+    sdk: flutter
+  flutter_secure_storage: ^11.2.0
+  http: ^1.2.2
+  sqflite: ^2.4.2
+  url_launcher: ^6.3.3
+  web: ^1.1.1
+
+dev_dependencies:
+  integration_test:
+    sdk: flutter
+  sqflite_common_ffi: ^2.4.0
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/icons/bona-mangxo.png
+    - assets/catalogue/
+    - assets/fonts/LICENSE-NotoSans.txt
+    - assets/fonts/LICENSE-NotoCJK.txt
+    - assets/fonts/LICENSE-NotoEmoji.txt
+  fonts:
+    - family: NotoSans
+      fonts:
+        - asset: assets/fonts/NotoSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/NotoSans-Bold.ttf
+          weight: 700
+    - family: NotoSansCJK
+      fonts:
+        - asset: assets/fonts/NotoSansCJKjp-Regular.otf
+    - family: NotoSansThai
+      fonts:
+        - asset: assets/fonts/NotoSansThai-Regular.ttf
+    - family: NotoEmoji
+      fonts:
+        - asset: assets/fonts/NotoEmoji.ttf

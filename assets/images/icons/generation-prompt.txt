@@ -1,0 +1,11 @@
+Use case: product-mockup. Asset type: square application icon, photorealistic studio product photography. One blue mango against an opaque rich green background, subtle soft contact shadow. The mango is recognizably a real mango with natural skin pores, realistic organic asymmetrical shape and blue skin, oriented diagonally from upper left (stem end) to lower right (fruit tip). A small short natural stem at the upper left of the fruit has a single attached lush green leaf extending across and taking up much of the upper right quadrant. The blue fruit fills the center and lower half while the leaf fills upper right. Clear silhouette legible at small app icon sizes, generous safe margin for OS corner clipping. Soft studio lighting, slight shadow, realistic texture, vivid tasteful blue against green. Full square green background, no border, no text, no letters, no watermark, no logos. Deliver 1024x1024 or higher square image.
+
+Edit 1 (built-in image_gen): Make the entire supplied icon approximately 15%
+lighter/brighter with a subtle global brightness lift. Preserve the composition,
+photorealistic blue mango, small upper-left stem, upper-right leaf, green
+background, texture and soft shadow. No redesign, repositioning or crop.
+
+Edit 2 (built-in image_gen, applied to Edit 1): Make this supplied version a
+further approximately 10% lighter/brighter without clipping highlights. Preserve
+the existing composition, mango and leaf shape, texture, colors, proportions and
+soft shadow. Square opaque icon, no text or watermark. Output 1024x1024.

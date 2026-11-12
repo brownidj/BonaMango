@@ -1,0 +1,115 @@
+# Python environments and compiled files
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+
+# Python packaging and tool caches
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.cache/
+.ipynb_checkpoints/
+
+# Test and coverage output
+.coverage
+.coverage.*
+htmlcov/
+coverage/
+coverage.xml
+junit.xml
+
+# Credentials and local environment settings (keep example templates)
+.env
+.env.*
+!.env.example
+!.env.*.example
+.direnv/
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+key.properties
+
+# PyCharm local state; shared run configurations and inspections stay versioned
+.idea/*
+!.idea/.gitignore
+!.idea/.name
+!.idea/runConfigurations/
+!.idea/inspectionProfiles/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/shelf/
+.idea/dictionaries/
+.idea/dataSources*
+.idea/data_source_mapping.xml
+.idea/dbnavigator.xml
+*.iws
+*.iml
+*.ipr
+
+# BonaManĝo runtime data; keep data/restaurants.txt and documentation
+/data/*.sqlite3
+/data/restaurants.csv
+/data/backups/
+/data/logs/
+/data/review/
+/data/mobile_connection.json
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+*.log
+*.sqlite3
+*.sqlite
+*.db-wal
+*.db-shm
+
+# Flutter has additional rules in flutter_app/.gitignore and platform folders
+.dart_tool/
+.pub-cache/
+.pub/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# macOS and editor temporary files
+.DS_Store
+._*
+.AppleDouble/
+*~
+*.swp
+*.swo
+
+# Generated private catalogue snapshot and public build configuration
+/flutter_app/assets/catalogue/initial_catalogue.json
+/data/catalogue_build.json
+
+# Locally exported distribution packages
+/data/releases/
+/build/
+# Flutter build output may be a symlink into the local macOS cache.
+/flutter_app/build
+
+# Signing credentials and exported Apple build products
+*.p8
+*.cer
+*.mobileprovision
+*.provisionprofile
+*.ipa
+*.xcarchive/
+*.dSYM/
+
+# Platform-local dependency and SDK output
+**/ephemeral/
+**/Pods/
+**/xcuserdata/
+**/.gradle/
+local.properties
