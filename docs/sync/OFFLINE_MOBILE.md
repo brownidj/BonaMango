@@ -180,10 +180,10 @@ pending; no automated tests/analyzer were run.
 
 David subsequently authorized automated testing. The earlier “not run” notes
 record the state at initial implementation, not the latest verification. See
-[the layered testing report](qa/2026-11-11-testing.md) for the passing Python,
+[the layered testing report](../qa/2026-11-11-testing.md) for the passing Python,
 Flutter, real SQLite, visual, native iOS and release-package checks, plus the
 remaining physical-device scenarios. Repeatable commands are in
-[TESTING.md](TESTING.md).
+[TESTING.md](../development/TESTING.md).
 
 
 ## Packaged data and network-return follow-up

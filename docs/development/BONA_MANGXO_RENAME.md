@@ -64,7 +64,7 @@ flutter run -d chrome
 Confirm that the title is BonaManĝo, restaurant rows load, and cuisine/dish/notes
 dialogs and Tel/Internet address columns still work. Record the date, platform,
 tester and results when carrying out these manual checks. iOS preparation is
-unchanged; see [Running the app](RUNNING_THE_APP.md).
+unchanged; see [Running the app](../guides/RUNNING_THE_APP.md).
 
 Tests were renamed and their module import updated; no test cases were added.
 No test suites, Flutter analysis, app launches or platform builds were run for

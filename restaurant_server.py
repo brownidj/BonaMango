@@ -43,6 +43,7 @@ def read_restaurants(database: Path) -> list[dict]:
 class RestaurantServer(ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = True
+    allow_reuse_port = False  # Never load-balance readiness checks across old servers.
 
     def __init__(self, port: int, database: Path, lan=False):
         self.database = database
@@ -329,18 +330,20 @@ def release_previous_service(port: int, database: Path) -> bool:
 
 
 def start_server(port: int, database: Path, lan=False) -> RestaurantServer:
-    # Binding is the port check: a separate probe would introduce a race.
-    try:
-        return RestaurantServer(port, database, lan=lan)
-    except OSError as error:
-        if error.errno != errno.EADDRINUSE:
-            raise
-        if not release_previous_service(port, database):
-            raise RuntimeError(
-                f'Port {port} is occupied by another program or an unverified service. '
-                f'Close that program, or use --port {port + 1 if port < 65535 else 8776} '
-                'and set Flutter RESTAURANT_API_URL to the same port.') from None
-    return RestaurantServer(port, database, lan=lan)
+    # Old Python servers may have enabled SO_REUSEPORT. Drain every verified
+    # listener for this project, never unrelated services, before retrying bind.
+    for _ in range(32):
+        try:
+            return RestaurantServer(port, database, lan=lan)
+        except OSError as error:
+            if error.errno != errno.EADDRINUSE:
+                raise
+            if not release_previous_service(port, database):
+                raise RuntimeError(
+                    f'Port {port} is occupied by another program or an unverified service. '
+                    f'Close that program, or use --port {port + 1 if port < 65535 else 8776} '
+                    'and set Flutter RESTAURANT_API_URL to the same port.') from None
+    raise RuntimeError('Too many previous catalogue listeners; stop them and retry.')
 
 
 def main():

@@ -4,7 +4,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-import 'mobile_catalogue_store.dart';
+import 'catalogue_store.dart';
+import '../services/catalogue_transport.dart';
 import '../models/restaurant.dart';
 
 Map<String, dynamic> _copy(Map value) =>
@@ -17,15 +18,18 @@ class MobileCatalogue extends ChangeNotifier {
     required this.remote,
     required this.baseUrl,
     required this.store,
+    CatalogueTransport? transport,
     this.loadSeed,
     this.localNetworkChanges,
     this.checkLocalNetwork,
     this.pairWithServer,
-  });
+  }) : transport =
+           transport ?? HttpCatalogueTransport(remote, baseUrl: baseUrl);
   static MobileCatalogue? active;
   final http.Client remote;
   final String baseUrl;
   final CatalogueStore store;
+  final CatalogueTransport transport;
   final Future<Map<String, dynamic>?> Function()? loadSeed;
   final Stream<bool>? localNetworkChanges;
   final Future<bool> Function()? checkLocalNetwork;
@@ -272,23 +276,12 @@ class MobileCatalogue extends ChangeNotifier {
     headers: {'content-type': 'application/json; charset=utf-8'},
   );
 
-  Future<http.Response> _request(
+  Future<CatalogueReply> _request(
     String method,
     String path, [
-    Map? body,
-  ]) async {
-    final request = http.Request(method, Uri.parse('$baseUrl$path'));
-    if (body != null) {
-      request.headers.addAll({
-        'Content-Type': 'application/json',
-        'X-BonaMangxo-Edit': '1',
-      });
-      request.body = jsonEncode(body);
-    }
-    return (() async => http.Response.fromStream(
-      await remote.send(request),
-    ))().timeout(const Duration(seconds: 6));
-  }
+    Map<String, dynamic>? body,
+  ]) =>
+      transport.request(method, path, body).timeout(const Duration(seconds: 6));
 
   /// First launch needs one successful download; subsequent loads are local and
   /// never wait for Wi-Fi. Background synchronization updates listeners later.
@@ -327,7 +320,7 @@ class MobileCatalogue extends ChangeNotifier {
       try {
         final response = await _request('GET', '/api/restaurants/$id/review');
         if (response.statusCode == 200) {
-          final details = jsonDecode(response.body) as Map<String, dynamic>;
+          final details = response.data;
           final next = _copy(_state!);
           (next['reviews'] as Map)[id.toString()] = details;
           await _commit(next);
@@ -357,7 +350,7 @@ class MobileCatalogue extends ChangeNotifier {
     try {
       final response = await _request('GET', '${uri.path}?${uri.query}');
       if (response.statusCode == 200) {
-        return response;
+        return _json(response.data, response.statusCode);
       }
     } catch (_) {
       /* Fall back to city names already in the local catalogue. */
@@ -539,7 +532,7 @@ class MobileCatalogue extends ChangeNotifier {
           final response = await _request(
             method == 'ADD' || method == 'REVIEW' ? 'POST' : method,
             path,
-            op['body'] as Map,
+            Map<String, dynamic>.from(op['body'] as Map),
           );
           if (response.statusCode == 401 ||
               response.statusCode == 403 ||
@@ -548,7 +541,7 @@ class MobileCatalogue extends ChangeNotifier {
               'Mac unavailable or not paired. Open sync details to pair with the Mac. Local changes are safe.',
             );
           }
-          final payload = jsonDecode(response.body) as Map<String, dynamic>;
+          final payload = response.data;
           final next = _copy(_state!);
           final queue = next['outbox'] as List;
           final index = queue.indexWhere((item) => item['key'] == op['key']);
@@ -603,7 +596,7 @@ class MobileCatalogue extends ChangeNotifier {
         if (response.statusCode != 200) {
           throw const FormatException('Could not sync with your Mac.');
         }
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final data = response.data;
         if (data['unchanged'] == true) {
           final next = _copy(_state!);
           next['last_synced'] = DateTime.now().toUtc().toIso8601String();

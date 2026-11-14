@@ -1,4 +1,4 @@
-# Running BonaManĝo: macOS, iOS, Chrome and Windows
+# Running BonaManĝo: macOS, iOS, Android, Chrome and Windows
 
 Updated: 12 November 2026.
 
@@ -11,6 +11,11 @@ All shell examples below use **zsh on the Mac**. The Windows section describes
 native Windows tools and executable arguments without requiring a PowerShell
 script. Run commands sequentially with `&&`; `&` starts concurrent work.
 
+The planned replacement connection layer is documented in the
+[Apple LAN/direct Wi-Fi plan](../sync/APPLE_LOCAL_SYNC_IMPLEMENTATION_PLAN.md).
+Bluetooth is deferred. The launch and pairing instructions below describe the
+current HTTP implementation; direct Wi-Fi has not been implemented yet.
+
 ## What each platform needs
 
 | Platform | Catalogue connection | Current verification |
@@ -18,12 +23,17 @@ script. Run commands sequentially with `&&`; `&` starts concurrent work.
 | macOS app | Python service on the same Mac, port 8776 | Debug build and code signature verified |
 | Chrome on a computer | Python service on that computer, port 8776 | Web release compilation and assets verified; browser interaction remains a manual check |
 | iOS app | Packaged starting data plus local SQLite; optional sync to the paired Mac | Two native iOS simulator integration tests passed; this app identity still needs physical-device QA |
+| Android app | Packaged starting data plus local SQLite; emulator launch described below | Debug APK compiled and launched on Pixel 8 AVD / API 37; physical-device and radio QA remain outstanding |
 | Windows app | Python service on the Windows computer, port 8776 | Windows runner/icon/configuration included; Windows compilation and device behaviour are unverified |
 
 Desktop and Chrome do not currently have the mobile offline database. Keep their
 Python service running. Mobile supports offline browsing, adding, editing and
 reviewing; enhanced OpenAI details discovery is unavailable on mobile.
 Maps, websites and telephone actions use the operating system's available apps.
+
+Android configuration now specifies Android 12 minimum and Android 16 target.
+Android debug compilation and Pixel 8 emulator launch passed; physical-device qualification and sync-provider preparation are described in
+[Sync preparation](../sync/SYNC_PREPARATION.md). Android is not yet a qualified release platform.
 
 ## Setup and data
 
@@ -78,7 +88,7 @@ coverage, and all native tests in `flutter_app/integration_test/`. It selects a
 booted iOS simulator; if none is booted, it fails rather than skipping tests.
 Choose a specific target with `--all --device DEVICE_ID`.
 
-The latest complete run passed **101 Python, 71 Flutter and 2 native iOS tests**,
+The latest complete run passed **101 Python, 76 Flutter and 2 native iOS tests**,
 with no analysis issues. The native tests use isolated data and fake transport;
 they are not a physical Wi-Fi, Maps or browser test. Logs are in `data/logs/`.
 
@@ -90,7 +100,7 @@ to silence an unexpected failure.
 
 `--all --builds` additionally compiles web/macOS/iOS release packages and checks
 assets. Signed iOS builds require the appropriate Apple signing setup. Manual
-checks and Windows-native builds remain separate; see [Testing](TESTING.md).
+checks and Windows-native builds remain separate; see [Testing](../development/TESTING.md).
 
 ## macOS
 
@@ -186,6 +196,19 @@ phone, replace `PHONE_ID` with its actual ID:
 ./scripts/run_mobile.zsh -d PHONE_ID
 ```
 
+On this Mac, the iPhone named David was detected on 13 November 2026 as:
+
+```zsh
+./scripts/run_mobile.zsh -d 00008110-001E48A02187601E
+```
+
+Device IDs can change when selecting another phone; check `flutter devices`.
+Run the script only once per command. The launcher rejects missing/duplicated
+`-d` arguments, script paths and literal `PHONE_ID`/`SIMULATOR_ID` placeholders
+before preparing services. On startup, only verified older servers for this
+project/database are replaced. Port sharing is disabled to prevent an older
+loopback server intercepting the LAN server's readiness check.
+
 The phone launcher defaults to release so the installed app can reopen without
 Flutter's debugger. It prepares the packaged catalogue, starts the Mac service
 in paired LAN mode, and supplies the private local owner configuration to this
@@ -194,6 +217,70 @@ personal development build. Allow Local Network access when prompted.
 No source change or extra Maps/Safari/telephone entitlement is needed merely to
 launch those OS handlers; verify the actions on a physical device. A debugger's
 VM-service timeout and catalogue synchronization are different connections.
+
+## Android: virtual device on the Mac
+
+Verified on 12 November 2026: compiled and installed the debug APK on the running
+`Pixel_8` AVD (`emulator-5554`, API 37). The app opened with the blue mango icon,
+local catalogue and no pending changes. No Flutter/fatal Android errors appeared
+in the inspected launch logs. Screenshot: `data/logs/android-launch/pixel8.png`
+(local ignored QA output).
+
+The minimum supported version is Android 12 (API 31); the target/compile SDK is
+Android 16 (API 36). A newer emulator can run this build. Install Android Studio,
+Android SDK tools and an ARM64 system image on this Apple Silicon Mac. Use Android
+Studio's Device Manager to create/start a virtual device, or list the existing
+ones from zsh:
+
+```zsh
+export PATH="/Users/david/development/flutter/bin:/Users/david/Library/Android/sdk/platform-tools:$PATH"
+/Users/david/Library/Android/sdk/emulator/emulator -list-avds
+flutter devices
+```
+
+For example, if `Pixel_8` is stopped, start it from a separate terminal:
+
+```zsh
+/Users/david/Library/Android/sdk/emulator/emulator -avd Pixel_8
+```
+
+Wait for Android to finish booting. Use the emulator ID from `flutter devices`
+(`emulator-5554` in this session), rather than the AVD name, to run Flutter:
+
+```zsh
+cd '/Users/david/PycharmProjects/bona_manĝo/flutter_app'
+flutter pub get && flutter run -d emulator-5554 --debug
+```
+
+This compiles, installs and opens the app with hot reload. Press `d` to detach
+and leave it running, or `q` to stop the debug session. For a separate APK build
+and launch without an attached Flutter session:
+
+```zsh
+cd '/Users/david/PycharmProjects/bona_manĝo/flutter_app'
+flutter build apk --debug &&
+  adb -s emulator-5554 install -r build/app/outputs/flutter-apk/app-debug.apk &&
+  adb -s emulator-5554 shell am start -n org.topository.bonamangxo/.MainActivity
+```
+
+The bundled catalogue seeds the local SQLite database on first launch; existing
+local edits are preserved on reinstall with `install -r`. Do not uninstall or
+clear app storage merely to update the build. No backend or pairing is required
+for offline browsing, adding, editing and reviewing. The default server URL is
+not an emulator-to-Mac connection: Android's `127.0.0.1` refers to the emulator.
+Mac pairing/network access requires separate configuration and verification.
+
+Native integration tests can also target the running emulator (they use isolated
+fixture data rather than the live Mac catalogue):
+
+```zsh
+cd '/Users/david/PycharmProjects/bona_manĝo'
+./scripts/run_tests.zsh --all --device emulator-5554
+```
+
+An emulator launch does not verify physical BLE syncing, background behaviour or
+telephone calling. Debug APKs use development signing; production Android signing
+and distribution remain separate work.
 
 ## iOS: private TestFlight distribution and sync
 
@@ -212,7 +299,7 @@ any already uploaded for this app/version:
 Here `1` is only a first-upload example. The resulting stable path is
 `build/ios/ipa/bona_mangxo_app.ipa` **under the project root**; a successful new
 export overwrites the previous IPA there. Upload manually with Transporter.
-See [TestFlight and Transporter](TESTFLIGHT_AND_TRANSPORTER.md) for the workflow;
+See [TestFlight and Transporter](../distribution/TESTFLIGHT_AND_TRANSPORTER.md) for the workflow;
 historical build numbers in that document are not this app's upload history.
 
 The shared build includes an initial catalogue and a public Mac server address,
@@ -239,7 +326,7 @@ Sync and list refresh are deferred while an edit/review flow is open, including
 nested Edit details. Saved changes become eligible when the flow closes; Cancel
 does not save or initiate sync. The sync modal closes after a successful sync
 with no pending changes/conflicts, and stays open on an error or conflict.
-See [Offline packaging and synchronization](PACKAGED_CATALOGUE_AND_SYNC.md).
+See [Offline packaging and synchronization](../sync/PACKAGED_CATALOGUE_AND_SYNC.md).
 
 ## Windows
 
@@ -289,6 +376,9 @@ Run the Windows host checks above sequentially, and run native iOS integration o
 the Mac. Cross-platform golden captures may differ on Windows; investigate a
 failure rather than blindly replacing the reviewed references. Windows builds,
 phone/browser handlers and packaged installation have not been verified here.
+
+Android catalogue reopening is covered by a large-document native regression
+test; see [Android reopen fix](../qa/2026-11-12-android-catalogue-reopen.md).
 
 ## Stop and troubleshoot
 

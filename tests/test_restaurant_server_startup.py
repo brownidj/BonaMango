@@ -60,3 +60,21 @@ class ServerStartupTests(unittest.TestCase):
             with self.assertRaises(PermissionError):
                 server.start_server(8776, Path('/tmp/data.sqlite3'))
             release.assert_not_called()
+
+    def test_multiple_verified_old_listeners_are_drained(self):
+        replacement = Mock()
+        with patch.object(server, 'RestaurantServer', side_effect=[
+                OSError(errno.EADDRINUSE, 'busy'), OSError(errno.EADDRINUSE, 'busy'), replacement]), \
+                patch.object(server, 'release_previous_service', return_value=True) as release:
+            self.assertIs(server.start_server(8776, Path('/tmp/data.sqlite3'), lan=True), replacement)
+            self.assertEqual(release.call_count, 2)
+
+    def test_launcher_rejects_bad_devices_before_preparation(self):
+        import subprocess
+        for args in [[], ['-d'], ['-d', 'PHONE_ID'],
+                     ['-d', './scripts/run_mobile.zsh', '-d', 'PHONE_ID']]:
+            with self.subTest(args=args):
+                result = subprocess.run(['zsh', str(server.ROOT / 'scripts/run_mobile.zsh'), *args],
+                                        capture_output=True, text=True)
+                self.assertEqual(result.returncode, 2)
+                self.assertNotIn('mobile service', result.stdout + result.stderr)

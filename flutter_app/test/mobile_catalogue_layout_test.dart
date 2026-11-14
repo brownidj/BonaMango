@@ -49,10 +49,12 @@ void main() {
       final name = tester.getRect(
         find.byKey(const ValueKey('restaurant-name-1')),
       );
+      final share = tester.getRect(find.byIcon(Icons.share_outlined));
       final phone = tester.getRect(find.byIcon(Icons.phone_outlined));
       final website = tester.getRect(find.byIcon(Icons.language));
       final edit = tester.getRect(find.byIcon(Icons.edit_outlined));
-      expect(phone.left, greaterThan(name.right));
+      expect(share.left, greaterThan(name.right));
+      expect(phone.left, greaterThanOrEqualTo(share.right));
       expect(website.left, greaterThan(phone.right));
       expect(edit.left, greaterThan(website.right));
       expect(phone.center.dy, inInclusiveRange(name.top, name.bottom));

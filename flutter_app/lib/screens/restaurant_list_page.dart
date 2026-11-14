@@ -10,6 +10,7 @@ import '../models/restaurant_sort.dart';
 import '../services/restaurant_maps.dart';
 import '../services/restaurant_website.dart';
 import '../widgets/contact_tooltip.dart';
+import '../widgets/restaurant_share_button.dart';
 import '../widgets/edit_restaurant_dialog.dart';
 import '../widgets/review_restaurant_dialog.dart';
 import '../widgets/restaurant_review_indicator.dart';
@@ -885,6 +886,7 @@ class _RestaurantNameState extends State<_RestaurantName> {
     final actions = Wrap(
       spacing: isMobilePlatform ? 0 : 4,
       children: [
+        RestaurantShareButton(restaurant: widget.restaurant),
         if (hasTelephone)
           ContactTooltip(
             tooltipKey: _telephoneTooltip,

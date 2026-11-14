@@ -19,6 +19,42 @@ Finder field(String label) => find.byWidgetPredicate(
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  testWidgets('large legacy catalogue survives native database reopen', (
+    tester,
+  ) async {
+    final path =
+        '${await getDatabasesPath()}/large-catalogue-regression.sqlite3';
+    final db = await openDatabase(path);
+    await db.execute(
+      'CREATE TABLE IF NOT EXISTS catalogues (scope TEXT PRIMARY KEY, document TEXT NOT NULL)',
+    );
+    final state = {
+      'evidence': List.filled(350000, 'Manĝo 🥭').join(),
+      'outbox': [
+        {'notes': 'Keep pending edit'},
+      ],
+      'resolved': [
+        {'notes': 'Keep conflict history'},
+      ],
+    };
+    await db.insert('catalogues', {
+      'scope': 'large-test',
+      'document': jsonEncode(state),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.setVersion(1);
+    await db.close();
+    final store = SqliteCatalogueStore('large-test', path: path);
+    try {
+      expect(await store.read(), state);
+      await store.write({...state, 'saved': true});
+      await store.close();
+      expect(await store.read(), {...state, 'saved': true});
+    } finally {
+      await store.close();
+      await deleteDatabase(path);
+    }
+  });
+
   testWidgets(
     'native SQLite: browse offline, edit, review, add, reopen, resolve conflict and delete',
     (tester) async {

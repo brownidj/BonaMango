@@ -10,7 +10,7 @@ BONA_MANGXO_IPA_DESTINATION="$BONA_MANGXO_PROJECT_ROOT/build/ios/ipa/bona_mangxo
 usage() {
   print 'Usage: scripts/build_testflight.zsh --build-number <integer> [--build-name <x.y.z>] [--dry-run]'
   print 'Builds an App Store IPA with Flutter; upload it manually using Transporter.'
-  print 'Packages initial data and a public server URL; never the private pairing key. See docs/TESTFLIGHT_AND_TRANSPORTER.md.'
+  print 'Packages initial data and a public server URL; never the private pairing key. See docs/distribution/TESTFLIGHT_AND_TRANSPORTER.md.'
 }
 while (( $# )); do
   case "$1" in

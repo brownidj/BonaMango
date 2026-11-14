@@ -31,7 +31,7 @@ After restarting the Python service and reloading Flutter, manually check a phon
 icon in desktop and card views, an international number, alternatives/extensions,
 and a record without a number. Confirm that there is no Tel column. Record date,
 platform, tester and results. Existing data-service restart commands are in
-[Running the app](RUNNING_THE_APP.md).
+[Running the app](../guides/RUNNING_THE_APP.md).
 
 No commit was made. Suggested commit: `Show international telephone numbers beneath restaurant names`.
 Phase: not applicable.

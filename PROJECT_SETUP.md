@@ -53,4 +53,4 @@ unrelated modules, Django facets and unrelated Git mappings. The project tree
 was visually verified to contain only bona_manĝo. Previous IDE metadata was
 retained under ignored data/backups; no sibling project files were changed.
 
-The current guide for macOS, iOS, Chrome and Windows is [Running the app](docs/RUNNING_THE_APP.md).
+The current guide for macOS, iOS, Chrome and Windows is [Running the app](docs/guides/RUNNING_THE_APP.md).

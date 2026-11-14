@@ -2,11 +2,14 @@
 
 Your world of good eats.
 
+Browse the [documentation index](docs/README.md) for guides, features, sync,
+Ditto planning, development, distribution and QA reports.
+
 A SQLite restaurant collection imported from `data/restaurants.txt` (the source
 file is `.txt`, not `.tex`). The original QJotter export is left unchanged.
 
 Rename details, compatibility paths and reopening steps are recorded in
-[the BonaManĝo rename notes](docs/BONA_MANGXO_RENAME.md).
+[the BonaManĝo rename notes](docs/development/BONA_MANGXO_RENAME.md).
 
 ## Setup
 
@@ -22,7 +25,7 @@ it does not load `.env` automatically. Never commit your key.
 
 ## Flutter interface
 
-See [Running BonaManĝo](docs/RUNNING_THE_APP.md) for macOS, iOS, Chrome and Windows setup, launch commands, testing,
+See [Running BonaManĝo](docs/guides/RUNNING_THE_APP.md) for macOS, iOS, Chrome and Windows setup, launch commands, testing,
 offline pairing and troubleshooting.
 
 The Dart/Flutter application in `flutter_app` lists restaurant name, city, country,
@@ -58,16 +61,16 @@ Build/refresh the separate local city index with:
 .venv/bin/python city_index.py --download
 ```
 
-See [City suggestions](docs/CITY_AUTOCOMPLETE.md) for coverage and attribution,
-and [Review and archive](docs/REVIEWING_RESTAURANTS.md) for recording Passed/Failed
+See [City suggestions](docs/features/CITY_AUTOCOMPLETE.md) for coverage and attribution,
+and [Review and archive](docs/guides/REVIEWING_RESTAURANTS.md) for recording Passed/Failed
 decisions, inspecting source evidence and restoring archived restaurants.
 
 ## TestFlight distribution
 
-See [TestFlight builds, Transporter and optional Shorebird](docs/TESTFLIGHT_AND_TRANSPORTER.md)
+See [TestFlight builds, Transporter and optional Shorebird](docs/distribution/TESTFLIGHT_AND_TRANSPORTER.md)
 for exporting an IPA, uploading it and inviting a private tester. The guide also
 explains packaged initial data and one-time pairing for invited users. See
-[packaged catalogue and automatic network-return sync](docs/PACKAGED_CATALOGUE_AND_SYNC.md)
+[packaged catalogue and automatic network-return sync](docs/sync/PACKAGED_CATALOGUE_AND_SYNC.md)
 for offline use and reconnecting to your Mac.
 
 ## Import and research
@@ -98,7 +101,7 @@ for offline use and reconnecting to your Mac.
 
 `data/restaurants.sqlite3` stores active restaurant records. Reviewed duplicates
 are consolidated with full original records preserved in `record_history`; see
-[duplicate consolidation](docs/DUPLICATE_CONSOLIDATION.md). Use
+[duplicate consolidation](docs/features/DUPLICATE_CONSOLIDATION.md). Use
 `status` to see current progress: it changes as imports and research complete.
 Run `import` with a working key before `enrich`; locally parsed seeds are not
 eligible for research until API extraction has refined them. `resume` performs
@@ -247,7 +250,7 @@ An edit icon follows the website icon beneath each restaurant name, including
 records without contact details. It opens a compact, scrollable modal. Save updates
 the database and the displayed record; Cancel leaves it unchanged. Main details
 are shown directly, with region, venue type, rankings, rating and venue status
-under More details. See [editing and manual verification](docs/EDITING_RECORDS.md).
+under More details. See [editing and manual verification](docs/guides/EDITING_RECORDS.md).
 
 ## Adding restaurants
 
@@ -258,4 +261,14 @@ for review before saving. A supplied website is read first for missing details
 and branches. Structured website data works without AI; interpreting unstructured
 page text uses the API when configured. All distinct discovered branches can be
 added together, while known existing branches are reported and left unchanged.
-See [adding restaurants](docs/ADDING_RESTAURANTS.md) for setup and manual checks.
+See [adding restaurants](docs/guides/ADDING_RESTAURANTS.md) for setup and manual checks.
+
+## Planned Apple local synchronization
+
+See the [Apple local sync implementation plan](docs/sync/APPLE_LOCAL_SYNC_IMPLEMENTATION_PLAN.md)
+for LAN and direct Apple peer-to-peer Wi-Fi. Bluetooth is deferred; Ditto requires
+paid production licensing and is no longer the selected approach. This is a plan;
+the existing HTTP/SQLite synchronization remains active.
+
+Provider-independent sync boundaries, Android preparation and remaining hardware
+checks are documented in [Sync preparation](docs/sync/SYNC_PREPARATION.md).

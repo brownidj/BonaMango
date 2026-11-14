@@ -1,7 +1,7 @@
 # BonaManĝo restaurant browser
 
 For the current macOS, iOS, Chrome and Windows launch guide, see
-[Running BonaManĝo](../docs/RUNNING_THE_APP.md).
+[Running BonaManĝo](../docs/guides/RUNNING_THE_APP.md).
 
 Flutter interface for `../data/restaurants.sqlite3`, targeting web and native
 macOS. Its columns are restaurant name, city, country and cuisine. Phone and
@@ -172,7 +172,7 @@ The city link opens Apple Maps in native macOS/iOS apps (with an Apple Maps
 web fallback), or Google Maps in a new browser tab on web and externally on
 other native platforms. Name, full address, city and country identify the venue.
 No map API key or location permission is required. The city tooltip explains the
-action. See [implementation and manual checks](../docs/MAP_LINKS.md), with the
+action. See [implementation and manual checks](../docs/features/MAP_LINKS.md), with the
 current city-link interaction replacing the earlier address-pin control.
 
 After adding `url_launcher`, fully stop and restart Flutter so its native plugin
@@ -184,7 +184,7 @@ last check. Login/anti-bot responses and checker failures are inconclusive and
 leave the icon neutral. Reloading the list may clear session-only check results.
 A server check cannot confirm the final rendering of a separate browser tab.
 Restart the Python service for the website-status endpoint, then reload Flutter.
-See [website checks](../docs/WEBSITE_LINKS.md) for manual verification.
+See [website checks](../docs/features/WEBSITE_LINKS.md) for manual verification.
 
 ## Cities filter — 10 November 2026
 
@@ -253,11 +253,11 @@ The Python service needs OPENAI_API_KEY for name/city web research or optional
 interpretation of unstructured website text. Website JSON-LD extraction and
 manual entry do not require AI. API usage may incur charges. The key stays in the
 service environment. Restart the Python service and reload Flutter after updating.
-See [implementation and manual verification](../docs/ADDING_RESTAURANTS.md).
+See [implementation and manual verification](../docs/guides/ADDING_RESTAURANTS.md).
 
 
 ## TestFlight and Transporter
 
-See [the distribution guide](../docs/TESTFLIGHT_AND_TRANSPORTER.md) for the local
+See [the distribution guide](../docs/distribution/TESTFLIGHT_AND_TRANSPORTER.md) for the local
 IPA build helper, Apple Transporter upload steps, TestFlight invitations and
 optional Shorebird initialization. Shorebird is not required for TestFlight.

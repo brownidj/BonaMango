@@ -33,7 +33,7 @@ and App Store Connect's processed icon display remain manual checks. iOS native
 integration used a simulator and simulated transport/network events. No live
 restaurant records were modified by the automated tests.
 
-See [packaging, pairing and synchronization](../PACKAGED_CATALOGUE_AND_SYNC.md).
+See [packaging, pairing and synchronization](../sync/PACKAGED_CATALOGUE_AND_SYNC.md).
 
 Suggested commit: `Package initial catalogue and sync local mobile changes on network return`.
 

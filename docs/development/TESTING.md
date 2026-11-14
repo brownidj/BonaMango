@@ -106,13 +106,13 @@ The app's optional home widget lets UI fixtures use the actual application theme
 
 ## Current project verification
 
-See [BonaManĝo local project validation](qa/2026-11-12-local-project.md).
+See [BonaManĝo local project validation](../qa/2026-11-12-local-project.md).
 Run `./scripts/run_tests.zsh` from the root for Python, Dart analysis and Flutter tests.
 
 ## Latest evidence
 
-See [packaged catalogue and sync results](qa/2026-11-11-packaged-catalogue.md)
-and the [earlier testing baseline](qa/2026-11-11-testing.md).
+See [packaged catalogue and sync results](../qa/2026-11-11-packaged-catalogue.md)
+and the [earlier testing baseline](../qa/2026-11-11-testing.md).
 Manual testing remains the default for future work unless David explicitly
 requests automated runs; this testing task supplied that authorization.
 

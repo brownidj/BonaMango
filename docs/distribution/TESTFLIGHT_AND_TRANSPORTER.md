@@ -23,7 +23,7 @@ The build helper now packages the current restaurant catalogue for offline first
 launch. Invited users can work on their local copy without reaching your Mac.
 When they return to its network, the app syncs while active after a one-time
 pairing-key entry. The key is kept in secure device storage, not in the shared IPA.
-See [packaged data and pairing instructions](PACKAGED_CATALOGUE_AND_SYNC.md).
+See [packaged data and pairing instructions](../sync/PACKAGED_CATALOGUE_AND_SYNC.md).
 
 The helper regenerates `assets/catalogue/initial_catalogue.json` and supplies only
 the public server URL via `data/catalogue_build.json`. `data/mobile_connection.json`
